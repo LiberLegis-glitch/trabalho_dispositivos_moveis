@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "770049412021",
+    "project_id": "sistema-academico-66ee8",
+    "storage_bucket": "sistema-academico-66ee8.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:770049412021:android:523d32a5910003ed6827fc",
+        "android_client_info": {
+          "package_name": "br.edu.faculdade.portalintegrado"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB-mxQd1--soCYsPBAhkwvdwtvUPayJIuc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:770049412021:android:3a4e25d9989afdfb6827fc",
+        "android_client_info": {
+          "package_name": "br.edu.faculdade.portalintegrado2"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB-mxQd1--soCYsPBAhkwvdwtvUPayJIuc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,82 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function logado() {
+      return request.auth != null;
+    }
+
+    // ---------- usuarios/{uid} ----------
+    function perfilValido(d) {
+      return d.keys().hasOnly(['nome', 'email', 'telefone', 'curso', 'criadoEm'])
+        && d.keys().hasAll(['nome', 'email', 'telefone', 'curso', 'criadoEm'])
+        && d.nome is string && d.nome.size() > 0 && d.nome.size() <= 100
+        && d.email is string
+        && d.telefone is string && d.telefone.size() >= 10 && d.telefone.size() <= 11
+        && d.curso is string && d.curso.size() > 0
+        && d.criadoEm is timestamp;
+    }
+
+    match /usuarios/{uid} {
+      allow read: if logado() && request.auth.uid == uid;
+      allow create: if logado() && request.auth.uid == uid
+        && perfilValido(request.resource.data);
+      // O e-mail e a data de criação não podem ser alterados.
+      allow update: if logado() && request.auth.uid == uid
+        && perfilValido(request.resource.data)
+        && request.resource.data.email == resource.data.email
+        && request.resource.data.criadoEm == resource.data.criadoEm;
+      allow delete: if false;
+    }
+
+    // ---------- disciplinas/{id} ----------
+    function disciplinaValida(d) {
+      return d.keys().hasOnly(['nome', 'professor', 'nota1', 'nota2', 'faltas',
+                               'totalAulas', 'usuarioId', 'criadoEm'])
+        && d.keys().hasAll(['nome', 'professor', 'nota1', 'nota2', 'faltas',
+                            'totalAulas', 'usuarioId', 'criadoEm'])
+        && d.nome is string && d.nome.size() > 0 && d.nome.size() <= 100
+        && d.professor is string && d.professor.size() > 0 && d.professor.size() <= 100
+        && d.nota1 is number && d.nota1 >= 0 && d.nota1 <= 10
+        && d.nota2 is number && d.nota2 >= 0 && d.nota2 <= 10
+        && d.faltas is int && d.faltas >= 0
+        && d.totalAulas is int && d.totalAulas > 0
+        && d.usuarioId == request.auth.uid
+        && d.criadoEm is timestamp;
+    }
+
+    match /disciplinas/{id} {
+      allow read, delete: if logado() && resource.data.usuarioId == request.auth.uid;
+      allow create: if logado() && disciplinaValida(request.resource.data);
+      allow update: if logado() && resource.data.usuarioId == request.auth.uid
+        && disciplinaValida(request.resource.data);
+    }
+
+    // ---------- livros/{id} ----------
+    function livroValido(d) {
+      return d.keys().hasOnly(['titulo', 'autor', 'devolucao', 'renovacoes',
+                               'usuarioId', 'criadoEm'])
+        && d.keys().hasAll(['titulo', 'autor', 'devolucao', 'renovacoes',
+                            'usuarioId', 'criadoEm'])
+        && d.titulo is string && d.titulo.size() > 0 && d.titulo.size() <= 150
+        && d.autor is string && d.autor.size() > 0 && d.autor.size() <= 100
+        && d.devolucao is timestamp
+        && d.renovacoes is int && d.renovacoes >= 0 && d.renovacoes <= 2
+        && d.usuarioId == request.auth.uid
+        && d.criadoEm is timestamp;
+    }
+
+    match /livros/{id} {
+      allow read, delete: if logado() && resource.data.usuarioId == request.auth.uid;
+      allow create: if logado() && livroValido(request.resource.data)
+        && request.resource.data.renovacoes == 0;
+      // Renovar: só devolução e contador de renovações mudam.
+      allow update: if logado() && resource.data.usuarioId == request.auth.uid
+        && livroValido(request.resource.data)
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['devolucao', 'renovacoes']);
+    }
+
+    // Todo o resto fica bloqueado por padrão.
+  }
+}
